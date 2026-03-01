@@ -1,0 +1,32 @@
+{
+  "course_name": "MECE6313",
+  "assignment_dir": "assignment",
+  "problems_dir": "assignment/problems",
+  "rubrics_dir": "assignment/rubrics",
+  "prompts_dir": "assignment/prompts",
+  "submissions_dir": "submissions",
+  "results_dir": "results",
+  "artifacts_dir": "results/artifacts",
+  "models": {
+    "split_model": "gemini-3-flash-preview",
+    "grade_model": "gemini-3.1-pro-preview",
+    "prompt_model": "gemini-3.1-pro-preview"
+  },
+  "split": {
+    "min_confidence": 0.55,
+    "render_dpi": 180,
+    "max_retries": 2,
+    "temperature": 0.5,
+    "unknown_token": "UNKNOWN"
+  },
+  "grading": {
+    "temperature": 0.1,
+    "max_retries": 2
+  },
+  "prompt_generation": {
+    "enabled": true,
+    "temperature": 0.7,
+    "max_problem_chars": 15000,
+    "max_rubric_chars": 12000
+  }
+}

@@ -1,0 +1,12 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+
+.venv/
+
+# Runtime outputs and private student data
+HW*/submissions/
+HW*/results/
+
+# Local cache/artifacts
+*.log
