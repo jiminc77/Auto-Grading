@@ -1,9 +1,9 @@
-# Auto-Grading Pipeline (MECE6313)
+# Auto-Grading Pipeline
 
-This repository helps you grade homework with Gemini in 3 steps:
+This repository helps you grade homework in 3 steps:
 
 1. Prepare assignment files (`problems`, `rubrics`)
-2. Generate grading prompts (and review them)
+2. Generate grading prompts (and review them) or make it manually
 3. Run grading for all students
 
 ## 1) Get the code (first time)
@@ -90,7 +90,7 @@ Example: grading `HW3`.
 2. Put rubrics into `HW3/assignment/rubrics/`
 3. Put student submissions into `HW3/submissions/{student_name}/...`
 
-### Step B. Generate prompts (manual review required)
+### Step B. Generate prompts (optional, manual review required)
 
 ```bash
 python3 run_grading_pipeline.py --config HW3/assignment_config.json --generate-prompts
@@ -116,19 +116,23 @@ For `HW3`:
 2. JSON snapshot: `HW3/results/Grading_Report_YYYYMMDD_HHMMSS.json`
 3. Artifacts: `HW3/results/artifacts/{student_name}/...`
 
-## 9) Model/temperature control
+## 9) Best preview / PDF
 
-In `HWn/assignment_config.json` you can set different temperatures by stage:
+Good preview options:
 
-1. `prompt_generation.temperature` (prompt writing)
-2. `split.temperature` (submission-to-problem split)
-3. `grading.temperature` (final grading)
+1. VS Code: open the report `.md`, then `Cmd + Shift + V`
+2. GitHub: push the report and preview directly in the repo
+3. Cursor/Codex markdown preview panel (if available in your editor)
 
-Default idea:
+PDF is useful when sharing final grades with others.
 
-- prompt generation: `1.0`
-- split: `0.5`
-- grading: `0.1`
+Example with `pandoc`:
+
+```bash
+pandoc HW3/results/Grading_Report_YYYYMMDD_HHMMSS.md -o HW3/results/Grading_Report_YYYYMMDD_HHMMSS.pdf
+```
+
+The reporter now writes grading output as normal Markdown (not a giant code block), so readability in preview should be much better.
 
 ## 10) Common errors
 

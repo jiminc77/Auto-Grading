@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -93,6 +94,7 @@ def _render_student_section(item: StudentRunResult) -> list[str]:
     lines.append("")
     lines.append("### Grading Outputs")
     for problem_id, grade in item.grades.items():
+        rendered = _normalize_grader_markdown(grade.response_text)
         lines.extend(
             [
                 "",
@@ -105,9 +107,9 @@ def _render_student_section(item: StudentRunResult) -> list[str]:
         lines.extend(
             [
                 "",
-                "```markdown",
-                grade.response_text.strip() if grade.response_text else "[Empty response]",
-                "```",
+                "##### Rendered Grading Result",
+                "",
+                rendered,
             ]
         )
 
@@ -115,3 +117,38 @@ def _render_student_section(item: StudentRunResult) -> list[str]:
     lines.append("---")
     lines.append("")
     return lines
+
+
+def _normalize_grader_markdown(text: str | None) -> str:
+    if not text or not text.strip():
+        return "[Empty response]"
+
+    normalized = text.strip()
+    normalized = _strip_wrapping_code_fence(normalized)
+    normalized = _demote_headings(normalized, by=2)
+    return normalized
+
+
+def _strip_wrapping_code_fence(text: str) -> str:
+    lines = text.splitlines()
+    if len(lines) < 2:
+        return text
+
+    first = lines[0].strip()
+    last = lines[-1].strip()
+    if not first.startswith("```") or last != "```":
+        return text
+
+    return "\n".join(lines[1:-1]).strip()
+
+
+def _demote_headings(text: str, by: int = 1) -> str:
+    out: list[str] = []
+    for line in text.splitlines():
+        match = re.match(r"^(#{1,6})(\s+.*)$", line)
+        if match:
+            level = min(len(match.group(1)) + by, 6)
+            out.append("#" * level + match.group(2))
+        else:
+            out.append(line)
+    return "\n".join(out)
