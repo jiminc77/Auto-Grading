@@ -22,28 +22,60 @@ cd Auto-Grading
 git pull origin main
 ```
 
-## 3) Python environment setup (one time)
+## 3) Environment setup (Windows / macOS / Linux)
 
-Create and use a local virtual environment only for this project:
+### Windows (PowerShell)
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-Set Gemini API key:
+Set Gemini API key (current terminal only):
+
+```powershell
+$env:GOOGLE_API_KEY="YOUR_API_KEY_HERE"
+```
+
+If PowerShell blocks activation, run once in the same terminal and retry:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
+
+Install PDF tools for auto PDF report:
+
+1. Install Pandoc: [pandoc.org/installing.html](https://pandoc.org/installing.html)
+2. Install MiKTeX (includes `xelatex`): [miktex.org/download](https://miktex.org/download)
+3. Reopen terminal, then check:
+
+```powershell
+pandoc --version
+xelatex --version
+```
+
+### macOS / Linux
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 export GOOGLE_API_KEY="YOUR_API_KEY_HERE"
 ```
 
-Install PDF tools (recommended for auto PDF report):
+PDF tools:
 
 ```bash
+# macOS
 brew install pandoc
 brew install --cask mactex-no-gui
+
+# Ubuntu/Debian example
+sudo apt-get update
+sudo apt-get install -y pandoc texlive-xetex
 ```
 
 ## 4) Folder structure
@@ -129,7 +161,7 @@ If PDF generation fails, markdown/json are still saved.
 
 ## 9) Best preview
 
-1. VS Code/Cursor Markdown preview (`Cmd + Shift + V`)
+1. VS Code/Cursor Markdown preview (`Ctrl + Shift + V` on Windows, `Cmd + Shift + V` on macOS)
 2. GitHub web view
 3. Generated PDF for sharing
 
@@ -153,7 +185,8 @@ The pipeline also applies line-wrap settings for long code/text to reduce clippi
 ## 11) Common errors
 
 1. `GOOGLE_API_KEY is not set`
-- Run: `export GOOGLE_API_KEY="YOUR_API_KEY_HERE"`
+- Windows PowerShell: `$env:GOOGLE_API_KEY="YOUR_API_KEY_HERE"`
+- macOS/Linux: `export GOOGLE_API_KEY="YOUR_API_KEY_HERE"`
 
 2. Gemini quota/auth errors
 - Check API key validity and billing/quota on your Gemini project.
