@@ -159,13 +159,7 @@ For `HW3`:
 PDF is generated automatically at the end of grading (if `report_pdf.enabled=true`).
 If PDF generation fails, markdown/json are still saved.
 
-## 9) Best preview
-
-1. VS Code/Cursor Markdown preview (`Ctrl + Shift + V` on Windows, `Cmd + Shift + V` on macOS)
-2. GitHub web view
-3. Generated PDF for sharing
-
-## 10) PDF style settings
+## 9) PDF style settings
 
 You can control PDF formatting in `HWn/assignment_config.json`:
 
@@ -182,7 +176,7 @@ You can control PDF formatting in `HWn/assignment_config.json`:
 
 The pipeline also applies line-wrap settings for long code/text to reduce clipping.
 
-## 11) Common errors
+## 10) Common errors
 
 1. `GOOGLE_API_KEY is not set`
 - Windows PowerShell: `$env:GOOGLE_API_KEY="YOUR_API_KEY_HERE"`
