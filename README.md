@@ -27,7 +27,7 @@ git pull origin main
 Create and use a local virtual environment only for this project:
 
 ```bash
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
@@ -67,7 +67,7 @@ Inside each `HWn/`:
 ## 5) Create a new homework (HW3, HW4, ...)
 
 ```bash
-python3 create_homework.py
+python create_homework.py
 ```
 
 The script asks for homework number and creates:
@@ -100,7 +100,7 @@ Example: grading `HW3`.
 ### Step B. Generate prompts (optional, manual review required)
 
 ```bash
-python3 run_grading_pipeline.py --config HW3/assignment_config.json --generate-prompts
+python run_grading_pipeline.py --config HW3/assignment_config.json --generate-prompts
 ```
 
 Review prompt files in:
@@ -110,7 +110,7 @@ Review prompt files in:
 ### Step C. Run grading
 
 ```bash
-python3 run_grading_pipeline.py --config HW3/assignment_config.json
+python run_grading_pipeline.py --config HW3/assignment_config.json
 ```
 
 If prompts are missing, grading will stop and ask you to generate prompts first.
