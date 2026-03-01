@@ -18,7 +18,7 @@ from grading_pipeline.models import SplitDecision, StudentRunResult
 from grading_pipeline.normalizer import build_submission_units
 from grading_pipeline.problem_context import load_problem_statement
 from grading_pipeline.prompt_generator import ensure_prompts
-from grading_pipeline.reporter import write_json_snapshot, write_markdown_report
+from grading_pipeline.reporter import write_json_snapshot, write_markdown_report, write_pdf_report
 from grading_pipeline.splitter import split_submission_units
 
 
@@ -164,6 +164,7 @@ def main() -> int:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     report_md = cfg.results_dir / f"Grading_Report_{timestamp}.md"
     report_json = cfg.results_dir / f"Grading_Report_{timestamp}.json"
+    report_pdf = cfg.results_dir / f"Grading_Report_{timestamp}.pdf"
     write_markdown_report(
         output_path=report_md,
         course_name=cfg.course_name,
@@ -172,9 +173,18 @@ def main() -> int:
         results=results,
     )
     write_json_snapshot(report_json, results)
+    pdf_ok, pdf_detail = write_pdf_report(
+        markdown_path=report_md,
+        output_path=report_pdf,
+        pdf_cfg=cfg.report_pdf,
+    )
 
     print(f"[pipeline] Report written: {report_md}")
     print(f"[pipeline] JSON snapshot written: {report_json}")
+    if pdf_ok:
+        print(f"[pipeline] PDF report written: {report_pdf}")
+    else:
+        print(f"[pipeline] PDF report skipped/failed: {pdf_detail}")
     return 0
 
 

@@ -39,6 +39,16 @@ class PromptGenerationConfig:
 
 
 @dataclass(frozen=True)
+class ReportPdfConfig:
+    enabled: bool
+    pdf_engine: str
+    paper_size: str
+    margin: str
+    font_size: str
+    line_spacing: float
+
+
+@dataclass(frozen=True)
 class PipelineConfig:
     course_name: str
     assignment_dir: Path
@@ -52,6 +62,7 @@ class PipelineConfig:
     split: SplitConfig
     grading: GradeConfig
     prompt_generation: PromptGenerationConfig
+    report_pdf: ReportPdfConfig
     problems: list[ProblemSpec]
 
 
@@ -75,6 +86,7 @@ def load_pipeline_config(config_path: Path) -> PipelineConfig:
     split = raw.get("split", {})
     grading = raw.get("grading", {})
     prompt_generation = raw.get("prompt_generation", {})
+    report_pdf = raw.get("report_pdf", {})
 
     split_model = models.get("split_model") or models.get("grade_model") or "gemini-3.1-pro-preview"
     grade_model = models.get("grade_model") or "gemini-3.1-pro-preview"
@@ -118,6 +130,14 @@ def load_pipeline_config(config_path: Path) -> PipelineConfig:
             temperature=float(prompt_generation.get("temperature", 1.0)),
             max_problem_chars=int(prompt_generation.get("max_problem_chars", 15000)),
             max_rubric_chars=int(prompt_generation.get("max_rubric_chars", 12000)),
+        ),
+        report_pdf=ReportPdfConfig(
+            enabled=bool(report_pdf.get("enabled", True)),
+            pdf_engine=str(report_pdf.get("pdf_engine", "xelatex")),
+            paper_size=str(report_pdf.get("paper_size", "letterpaper")),
+            margin=str(report_pdf.get("margin", "0.85in")),
+            font_size=str(report_pdf.get("font_size", "10pt")),
+            line_spacing=float(report_pdf.get("line_spacing", 1.12)),
         ),
         problems=problems,
     )

@@ -2,9 +2,14 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import subprocess
+import tempfile
+import textwrap
 from datetime import datetime
 from pathlib import Path
 
+from .config import ReportPdfConfig
 from .models import StudentRunResult
 
 
@@ -65,6 +70,70 @@ def write_json_snapshot(output_path: Path, results: list[StudentRunResult]) -> N
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def write_pdf_report(
+    markdown_path: Path,
+    output_path: Path,
+    pdf_cfg: ReportPdfConfig,
+) -> tuple[bool, str]:
+    if not pdf_cfg.enabled:
+        return False, "disabled by config"
+
+    pandoc_bin = shutil.which("pandoc")
+    if pandoc_bin is None:
+        return (
+            False,
+            "pandoc is not installed (install pandoc + LaTeX engine to enable PDF export)",
+        )
+
+    markdown_path = markdown_path.resolve()
+    output_path = output_path.resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    engines = _candidate_pdf_engines(pdf_cfg.pdf_engine)
+    errors: list[str] = []
+
+    with tempfile.TemporaryDirectory(prefix="grading_pdf_") as tmp_dir:
+        header_path = Path(tmp_dir) / "pandoc_header.tex"
+        header_path.write_text(_pdf_header_tex(), encoding="utf-8")
+
+        for engine in engines:
+            cmd = [
+                pandoc_bin,
+                str(markdown_path),
+                "--from",
+                "gfm",
+                "--standalone",
+                "--toc",
+                "--toc-depth",
+                "3",
+                "--quiet",
+                "--listings",
+                "--pdf-engine",
+                engine,
+                "--include-in-header",
+                str(header_path),
+                "--variable",
+                f"fontsize={pdf_cfg.font_size}",
+                "--variable",
+                f"linestretch={pdf_cfg.line_spacing:.2f}",
+                "--variable",
+                f"geometry:{pdf_cfg.paper_size}",
+                "--variable",
+                f"geometry:margin={pdf_cfg.margin}",
+                "--output",
+                str(output_path),
+            ]
+            proc = subprocess.run(cmd, capture_output=True, text=True)
+            if proc.returncode == 0 and output_path.exists() and output_path.stat().st_size > 0:
+                return True, f"ok (engine={engine})"
+
+            detail = (proc.stderr or proc.stdout or "").strip().splitlines()
+            summary = detail[-1] if detail else "unknown error"
+            errors.append(f"{engine}: {summary}")
+
+    return False, " ; ".join(errors)
 
 
 def _render_student_section(item: StudentRunResult) -> list[str]:
@@ -152,3 +221,36 @@ def _demote_headings(text: str, by: int = 1) -> str:
         else:
             out.append(line)
     return "\n".join(out)
+
+
+def _candidate_pdf_engines(primary: str) -> list[str]:
+    ordered = [primary.strip(), "xelatex", "pdflatex", "lualatex"]
+    out: list[str] = []
+    seen: set[str] = set()
+    for item in ordered:
+        if not item:
+            continue
+        key = item.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(item)
+    return out
+
+
+def _pdf_header_tex() -> str:
+    # Improve line wrapping and prevent clipping for long lines/code-like text.
+    return textwrap.dedent(
+        r"""
+        \usepackage{microtype}
+        \usepackage{listings}
+        \lstset{
+          breaklines=true,
+          breakatwhitespace=true,
+          columns=fullflexible,
+          basicstyle=\ttfamily\small
+        }
+        \setlength{\emergencystretch}{3em}
+        \sloppy
+        """
+    ).strip()

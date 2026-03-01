@@ -28,5 +28,13 @@
     "temperature": 0.7,
     "max_problem_chars": 15000,
     "max_rubric_chars": 12000
+  },
+  "report_pdf": {
+    "enabled": true,
+    "pdf_engine": "xelatex",
+    "paper_size": "letterpaper",
+    "margin": "0.85in",
+    "font_size": "10pt",
+    "line_spacing": 1.12
   }
 }

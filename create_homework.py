@@ -103,6 +103,14 @@ def _default_assignment_config() -> dict:
             "max_problem_chars": 15000,
             "max_rubric_chars": 12000,
         },
+        "report_pdf": {
+            "enabled": True,
+            "pdf_engine": "xelatex",
+            "paper_size": "letterpaper",
+            "margin": "0.85in",
+            "font_size": "10pt",
+            "line_spacing": 1.12,
+        },
     }
 
 

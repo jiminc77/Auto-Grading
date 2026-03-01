@@ -39,6 +39,13 @@ Set Gemini API key:
 export GOOGLE_API_KEY="YOUR_API_KEY_HERE"
 ```
 
+Install PDF tools (recommended for auto PDF report):
+
+```bash
+brew install pandoc
+brew install --cask mactex-no-gui
+```
+
 ## 4) Folder structure
 
 At repository root:
@@ -114,27 +121,36 @@ For `HW3`:
 
 1. Markdown report: `HW3/results/Grading_Report_YYYYMMDD_HHMMSS.md`
 2. JSON snapshot: `HW3/results/Grading_Report_YYYYMMDD_HHMMSS.json`
-3. Artifacts: `HW3/results/artifacts/{student_name}/...`
+3. PDF report (auto): `HW3/results/Grading_Report_YYYYMMDD_HHMMSS.pdf`
+4. Artifacts: `HW3/results/artifacts/{student_name}/...`
 
-## 9) Best preview / PDF
+PDF is generated automatically at the end of grading (if `report_pdf.enabled=true`).
+If PDF generation fails, markdown/json are still saved.
 
-Good preview options:
+## 9) Best preview
 
-1. VS Code: open the report `.md`, then `Cmd + Shift + V`
-2. GitHub: push the report and preview directly in the repo
-3. Cursor/Codex markdown preview panel (if available in your editor)
+1. VS Code/Cursor Markdown preview (`Cmd + Shift + V`)
+2. GitHub web view
+3. Generated PDF for sharing
 
-PDF is useful when sharing final grades with others.
+## 10) PDF style settings
 
-Example with `pandoc`:
+You can control PDF formatting in `HWn/assignment_config.json`:
 
-```bash
-pandoc HW3/results/Grading_Report_YYYYMMDD_HHMMSS.md -o HW3/results/Grading_Report_YYYYMMDD_HHMMSS.pdf
+```json
+"report_pdf": {
+  "enabled": true,
+  "pdf_engine": "xelatex",
+  "paper_size": "letterpaper",
+  "margin": "0.85in",
+  "font_size": "10pt",
+  "line_spacing": 1.12
+}
 ```
 
-The reporter now writes grading output as normal Markdown (not a giant code block), so readability in preview should be much better.
+The pipeline also applies line-wrap settings for long code/text to reduce clipping.
 
-## 10) Common errors
+## 11) Common errors
 
 1. `GOOGLE_API_KEY is not set`
 - Run: `export GOOGLE_API_KEY="YOUR_API_KEY_HERE"`
@@ -144,3 +160,7 @@ The reporter now writes grading output as normal Markdown (not a giant code bloc
 
 3. Empty model response
 - Retry once; if repeated, lower input size or check API availability.
+
+4. PDF generation failed
+- Install `pandoc` and a LaTeX engine (`xelatex` recommended).
+- Or set `"report_pdf": { "enabled": false }` in config.
