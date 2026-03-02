@@ -85,7 +85,10 @@ def _default_assignment_config() -> dict:
             "split_model": "gemini-3-flash-preview",
             "grade_model": "gemini-3.1-pro-preview",
             "prompt_model": "gemini-3.1-pro-preview",
-            "grade_fallback_models": ["gemini-3-flash"],
+            "grade_fallback_models": [
+                "gemini-3-flash",
+                "gemini-3-flash-preview"
+            ],
         },
         "split": {
             "min_confidence": 0.55,

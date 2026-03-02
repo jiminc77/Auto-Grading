@@ -9,6 +9,7 @@ from google.genai import types
 from .api_errors import (
     explain_empty_response,
     explain_gemini_exception,
+    is_model_not_found_error,
     is_transient_overload_error,
     print_once,
 )
@@ -106,6 +107,12 @@ Split material text bundle:
                 message = explain_gemini_exception(exc, "Grading")
                 print_once(_LOGGED_ERRORS, message, prefix="grading")
                 last_error = RuntimeError(message)
+                if is_model_not_found_error(exc):
+                    print(
+                        f"[grading] WARN: model not available for {bundle.problem.problem_id}: "
+                        f"{current_model}"
+                    )
+                    break
                 if is_transient_overload_error(exc):
                     _maybe_wait_before_retry(
                         current_model=current_model,

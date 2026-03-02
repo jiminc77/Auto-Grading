@@ -63,6 +63,15 @@ def is_transient_overload_error(exc_or_text: Exception | str) -> bool:
     return any(token in text for token in tokens)
 
 
+def is_model_not_found_error(exc_or_text: Exception | str) -> bool:
+    text = str(exc_or_text).lower()
+    return (
+        "404" in text
+        and "model" in text
+        and ("not found" in text or "unknown model" in text or "not supported" in text)
+    )
+
+
 def explain_empty_response(stage: str) -> str:
     return (
         f"{stage} failed: Gemini returned an empty response. "

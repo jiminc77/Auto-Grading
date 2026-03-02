@@ -187,7 +187,7 @@ Set fallback models in `HWn/assignment_config.json`:
   "split_model": "gemini-3-flash-preview",
   "grade_model": "gemini-3.1-pro-preview",
   "prompt_model": "gemini-3.1-pro-preview",
-  "grade_fallback_models": ["gemini-3-flash"]
+  "grade_fallback_models": ["gemini-3-flash", "gemini-3-flash-preview"]
 }
 ```
 

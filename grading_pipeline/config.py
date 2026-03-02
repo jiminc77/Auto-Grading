@@ -350,14 +350,15 @@ def _sort_problem_specs(specs: list[ProblemSpec]) -> list[ProblemSpec]:
 
 
 def _normalize_model_list(value) -> list[str]:
+    default_fallbacks = ["gemini-3-flash", "gemini-3-flash-preview"]
     if not value:
-        return ["gemini-3-flash"]
+        return default_fallbacks
     if isinstance(value, str):
         items = [value]
     elif isinstance(value, list):
         items = [str(x) for x in value]
     else:
-        return ["gemini-3-flash"]
+        return default_fallbacks
 
     out: list[str] = []
     seen: set[str] = set()
@@ -370,4 +371,4 @@ def _normalize_model_list(value) -> list[str]:
             continue
         seen.add(key)
         out.append(name)
-    return out or ["gemini-3-flash"]
+    return out or default_fallbacks
