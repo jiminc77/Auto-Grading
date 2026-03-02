@@ -82,7 +82,7 @@ def _default_assignment_config() -> dict:
         "results_dir": "results",
         "artifacts_dir": "results/artifacts",
         "models": {
-            "split_model": "gemini-3.1-pro-preview",
+            "split_model": "gemini-3-flash-preview",
             "grade_model": "gemini-3.1-pro-preview",
             "prompt_model": "gemini-3.1-pro-preview",
         },
