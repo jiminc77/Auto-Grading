@@ -13,6 +13,7 @@ class ModelConfig:
     split_model: str
     grade_model: str
     prompt_model: str
+    grade_fallback_models: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -91,6 +92,7 @@ def load_pipeline_config(config_path: Path) -> PipelineConfig:
     split_model = models.get("split_model") or models.get("grade_model") or "gemini-3.1-pro-preview"
     grade_model = models.get("grade_model") or "gemini-3.1-pro-preview"
     prompt_model = models.get("prompt_model") or grade_model
+    grade_fallback_models = _normalize_model_list(models.get("grade_fallback_models"))
 
     problems = _load_problem_specs(
         raw=raw,
@@ -113,6 +115,7 @@ def load_pipeline_config(config_path: Path) -> PipelineConfig:
             split_model=split_model,
             grade_model=grade_model,
             prompt_model=prompt_model,
+            grade_fallback_models=tuple(grade_fallback_models),
         ),
         split=SplitConfig(
             min_confidence=float(split.get("min_confidence", 0.55)),
@@ -344,3 +347,27 @@ def _sort_problem_specs(specs: list[ProblemSpec]) -> list[ProblemSpec]:
         return (1, 10**9, item.problem_id)
 
     return sorted(specs, key=sort_key)
+
+
+def _normalize_model_list(value) -> list[str]:
+    if not value:
+        return ["gemini-3-flash"]
+    if isinstance(value, str):
+        items = [value]
+    elif isinstance(value, list):
+        items = [str(x) for x in value]
+    else:
+        return ["gemini-3-flash"]
+
+    out: list[str] = []
+    seen: set[str] = set()
+    for raw in items:
+        name = str(raw).strip()
+        if not name:
+            continue
+        key = name.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(name)
+    return out or ["gemini-3-flash"]

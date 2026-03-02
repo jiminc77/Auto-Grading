@@ -149,6 +149,7 @@ def main() -> int:
                 model_name=cfg.models.grade_model,
                 grading_cfg=cfg.grading,
                 bundle=bundle,
+                fallback_model_names=cfg.models.grade_fallback_models,
             )
 
         results.append(

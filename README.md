@@ -176,7 +176,22 @@ You can control PDF formatting in `HWn/assignment_config.json`:
 
 The pipeline also applies line-wrap settings for long code/text to reduce clipping.
 
-## 10) Common errors
+## 10) Model fallback on 503 (high demand)
+
+If `gemini-3.1-pro-preview` returns temporary `503 UNAVAILABLE`, grading now retries and can automatically switch to fallback models.
+
+Set fallback models in `HWn/assignment_config.json`:
+
+```json
+"models": {
+  "split_model": "gemini-3-flash-preview",
+  "grade_model": "gemini-3.1-pro-preview",
+  "prompt_model": "gemini-3.1-pro-preview",
+  "grade_fallback_models": ["gemini-3-flash"]
+}
+```
+
+## 11) Common errors
 
 1. `GOOGLE_API_KEY is not set`
 - Windows PowerShell: `$env:GOOGLE_API_KEY="YOUR_API_KEY_HERE"`
@@ -191,3 +206,7 @@ The pipeline also applies line-wrap settings for long code/text to reduce clippi
 4. PDF generation failed
 - Install `pandoc` and a LaTeX engine (`xelatex` recommended).
 - Or set `"report_pdf": { "enabled": false }` in config.
+
+5. `503 UNAVAILABLE` from Gemini
+- Usually temporary high demand on model side.
+- Pipeline retries automatically and can switch to `grade_fallback_models`.

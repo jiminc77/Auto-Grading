@@ -48,6 +48,21 @@ def explain_gemini_exception(exc: Exception, stage: str) -> str:
     return f"{stage} failed: Gemini API error. Details: {raw}"
 
 
+def is_transient_overload_error(exc_or_text: Exception | str) -> bool:
+    text = str(exc_or_text).lower()
+    tokens = [
+        "503",
+        "unavailable",
+        "high demand",
+        "temporarily unavailable",
+        "deadline exceeded",
+        "timeout",
+        "timed out",
+        "connection reset",
+    ]
+    return any(token in text for token in tokens)
+
+
 def explain_empty_response(stage: str) -> str:
     return (
         f"{stage} failed: Gemini returned an empty response. "
@@ -61,4 +76,3 @@ def print_once(cache: set[str], message: str, prefix: str) -> None:
         return
     cache.add(key)
     print(f"[{prefix}] ERROR: {message}")
-
