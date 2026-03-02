@@ -153,6 +153,44 @@ Resume behavior:
 2. Students that failed mid-run (or had grading errors) are re-graded on next run.
 3. Checkpoints are stored in `HW3/results/checkpoints/`.
 
+### Step D. If one student uploaded the wrong file
+
+Use one of these two methods.
+
+Option 1: Re-grade only that student (quick check)
+
+```bash
+python run_grading_pipeline.py --config HW3/assignment_config.json --student <student_name>
+```
+
+Then open the newest report file in `HW3/results/`:
+
+- `Grading_Report_YYYYMMDD_HHMMSS.md`
+- `Grading_Report_YYYYMMDD_HHMMSS.pdf` (if enabled)
+
+Option 2: Replace that student in the next full report
+
+1. Replace files in `HW3/submissions/{student_name}/...`
+2. Delete that student's checkpoint so skip logic is removed
+3. (Recommended) delete old artifacts for that student
+4. Run full grading again (without `--student`)
+
+Windows PowerShell example:
+
+```powershell
+Remove-Item .\HW3\results\checkpoints\<student_name>.json
+Remove-Item .\HW3\results\artifacts\<student_name> -Recurse -Force
+python run_grading_pipeline.py --config HW3/assignment_config.json
+```
+
+macOS/Linux example:
+
+```bash
+rm -f HW3/results/checkpoints/<student_name>.json
+rm -rf HW3/results/artifacts/<student_name>
+python run_grading_pipeline.py --config HW3/assignment_config.json
+```
+
 ## 8) Outputs
 
 For `HW3`:
