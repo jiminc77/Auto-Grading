@@ -11,6 +11,12 @@ from pathlib import Path
 
 from google import genai
 
+from grading_pipeline.checkpoint import (
+    load_completed_student_results,
+    mark_student_completed,
+    mark_student_failed,
+    mark_student_in_progress,
+)
 from grading_pipeline.config import PipelineConfig, load_pipeline_config
 from grading_pipeline.discovery import discover_students
 from grading_pipeline.grader import grade_problem_bundle
@@ -110,57 +116,106 @@ def main() -> int:
 
     cfg.results_dir.mkdir(parents=True, exist_ok=True)
     cfg.artifacts_dir.mkdir(parents=True, exist_ok=True)
+    checkpoint_dir = cfg.results_dir / "checkpoints"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
+    completed_cache = load_completed_student_results(checkpoint_dir, student_names)
+    if completed_cache:
+        print(
+            f"[pipeline] resume: {len(completed_cache)} completed student(s) "
+            "loaded from checkpoints and will be skipped."
+        )
 
     results: list[StudentRunResult] = []
     for student_name in student_names:
+        if student_name in completed_cache:
+            print(f"[pipeline] Skipping student (already completed): {student_name}")
+            results.append(completed_cache[student_name])
+            continue
+
         print(f"[pipeline] Processing student: {student_name}")
         submissions = discovered[student_name]
+        mark_student_in_progress(
+            checkpoint_dir=checkpoint_dir,
+            student_name=student_name,
+            submissions=submissions,
+        )
         student_artifact_dir = cfg.artifacts_dir / student_name
         student_artifact_dir.mkdir(parents=True, exist_ok=True)
 
-        units = build_submission_units(
-            submission_files=submissions,
-            student_artifact_dir=student_artifact_dir,
-            render_dpi=cfg.split.render_dpi,
-        )
-        print(f"[pipeline]   normalized units: {len(units)}")
-
-        decisions, bundles = split_submission_units(
-            client=client,
-            model_name=cfg.models.split_model,
-            split_cfg=cfg.split,
-            student_name=student_name,
-            units=units,
-            problems=cfg.problems,
-            student_artifact_dir=student_artifact_dir,
-        )
-
-        _write_split_manifest(student_artifact_dir, decisions)
-
-        grades = {}
-        for problem in cfg.problems:
-            bundle = bundles[problem.problem_id]
-            print(
-                f"[pipeline]   grading {problem.problem_id} "
-                f"(units={len(bundle.units)}, model={cfg.models.grade_model})"
+        try:
+            units = build_submission_units(
+                submission_files=submissions,
+                student_artifact_dir=student_artifact_dir,
+                render_dpi=cfg.split.render_dpi,
             )
-            grades[problem.problem_id] = grade_problem_bundle(
+            print(f"[pipeline]   normalized units: {len(units)}")
+
+            decisions, bundles = split_submission_units(
                 client=client,
-                model_name=cfg.models.grade_model,
-                grading_cfg=cfg.grading,
-                bundle=bundle,
-                fallback_model_names=cfg.models.grade_fallback_models,
+                model_name=cfg.models.split_model,
+                split_cfg=cfg.split,
+                student_name=student_name,
+                units=units,
+                problems=cfg.problems,
+                student_artifact_dir=student_artifact_dir,
             )
 
-        results.append(
-            StudentRunResult(
+            _write_split_manifest(student_artifact_dir, decisions)
+
+            grades = {}
+            for problem in cfg.problems:
+                bundle = bundles[problem.problem_id]
+                print(
+                    f"[pipeline]   grading {problem.problem_id} "
+                    f"(units={len(bundle.units)}, model={cfg.models.grade_model})"
+                )
+                grades[problem.problem_id] = grade_problem_bundle(
+                    client=client,
+                    model_name=cfg.models.grade_model,
+                    grading_cfg=cfg.grading,
+                    bundle=bundle,
+                    fallback_model_names=cfg.models.grade_fallback_models,
+                )
+
+            student_result = StudentRunResult(
                 student_name=student_name,
                 submissions=submissions,
                 unit_count=len(units),
                 bundles=bundles,
                 grades=grades,
             )
-        )
+            results.append(student_result)
+
+            has_problem_errors = any(g.raw_error for g in grades.values())
+            if has_problem_errors:
+                mark_student_failed(
+                    checkpoint_dir=checkpoint_dir,
+                    student_name=student_name,
+                    submissions=submissions,
+                    error="One or more problems failed to grade; student will be retried on next run.",
+                )
+                print(
+                    f"[pipeline] WARN: {student_name} has grading errors; "
+                    "checkpoint marked as failed (will re-run next time)."
+                )
+            else:
+                mark_student_completed(
+                    checkpoint_dir=checkpoint_dir,
+                    result=student_result,
+                )
+        except Exception as exc:  # noqa: BLE001
+            mark_student_failed(
+                checkpoint_dir=checkpoint_dir,
+                student_name=student_name,
+                submissions=submissions,
+                error=str(exc),
+            )
+            print(
+                f"[pipeline] ERROR: student {student_name} failed unexpectedly; "
+                "checkpoint marked as failed."
+            )
+            raise
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     report_md = cfg.results_dir / f"Grading_Report_{timestamp}.md"

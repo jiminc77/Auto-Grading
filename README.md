@@ -147,6 +147,12 @@ python run_grading_pipeline.py --config HW3/assignment_config.json
 
 If prompts are missing, grading will stop and ask you to generate prompts first.
 
+Resume behavior:
+
+1. Completed students are skipped automatically on next run.
+2. Students that failed mid-run (or had grading errors) are re-graded on next run.
+3. Checkpoints are stored in `HW3/results/checkpoints/`.
+
 ## 8) Outputs
 
 For `HW3`:
@@ -155,6 +161,7 @@ For `HW3`:
 2. JSON snapshot: `HW3/results/Grading_Report_YYYYMMDD_HHMMSS.json`
 3. PDF report (auto): `HW3/results/Grading_Report_YYYYMMDD_HHMMSS.pdf`
 4. Artifacts: `HW3/results/artifacts/{student_name}/...`
+5. Student checkpoints: `HW3/results/checkpoints/{student_name}.json`
 
 PDF is generated automatically at the end of grading (if `report_pdf.enabled=true`).
 If PDF generation fails, markdown/json are still saved.
