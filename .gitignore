@@ -7,6 +7,12 @@ __pycache__/
 # Runtime outputs and private student data
 HW*/submissions/
 HW*/results/
+HW*/assignment/
+HW*/assignment_config.json
+HW*/assignment/solutions/
+HW*/assignment/prompts/
+HW*/assignment/rubrics/
+HW*/assignment/problems/
 
 # Local cache/artifacts
 *.log
