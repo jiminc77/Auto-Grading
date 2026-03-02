@@ -86,7 +86,6 @@ def _default_assignment_config() -> dict:
             "grade_model": "gemini-3.1-pro-preview",
             "prompt_model": "gemini-3.1-pro-preview",
             "grade_fallback_models": [
-                "gemini-3-flash",
                 "gemini-3-flash-preview"
             ],
         },
